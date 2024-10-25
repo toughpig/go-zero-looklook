@@ -1,12 +1,11 @@
 version: '3'
 
 ######## 项目依赖的环境，启动项目之前要先启动此环境 #######
-######## The environment that the project depends on, starting this environment before starting the project #######
 
 services:
-  #jaeger链路追踪 — Jaeger for tracing
+  #jaeger链路追踪
   jaeger:
-    image: jaegertracing/all-in-one:1.42.0
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/all-in-one:1.42.0
     container_name: jaeger
     restart: always
     ports:
@@ -24,12 +23,12 @@ services:
     networks:
       - looklook_net
 
-  #prometheus监控 — Prometheus for monitoring
+  #prometheus监控
   prometheus:
-    image: prom/prometheus:v2.28.1
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/prometheus:v2.28.1
     container_name: prometheus
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     volumes:
       - ./deploy/prometheus/server/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -44,14 +43,14 @@ services:
     networks:
       - looklook_net
 
-  #查看prometheus监控数据 - Grafana to view Prometheus monitoring data
+  #查看prometheus监控数据
   grafana:
-    image: grafana/grafana:8.0.6
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/grafana:8.0.6
     container_name: grafana
     hostname: grafana
     user: root
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     restart: always
     volumes:
@@ -61,9 +60,9 @@ services:
     networks:
         - looklook_net
 
-  #搜集kafka业务日志、存储prometheus监控数据 - Kafka for collecting business logs and storing Prometheus monitoring data
+#  #搜集kafka业务日志、存储prometheus监控数据
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.4
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/elasticsearch:7.13.4
     container_name: elasticsearch
     user: root
     environment:
@@ -79,9 +78,9 @@ services:
     networks:
       - looklook_net
 
-  #查看elasticsearch数据 - Kibana to view Elasticsearch data
+  #查看elasticsearch数据
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.13.4
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/kibana:7.13.4
     container_name: kibana
     environment:
       - elasticsearch.hosts=http://elasticsearch:9200
@@ -94,13 +93,13 @@ services:
     depends_on:
       - elasticsearch
 
-  #消费kafka中filebeat收集的数据输出到es - The data output collected by FileBeat in Kafka is output to ES
+  #消费kafka中filebeat收集的数据输出到es
   go-stash:
-    image: kevinwan/go-stash:1.0 # if you "macOs intel" or "linux amd"
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/go-stash:1.0 # if you "macOs intel" or "linux amd"
 #    image: kevinwan/go-stash:1.0-arm64 #  if you "macOs m1" or "linux arm"
     container_name: go-stash
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     user: root
     restart: always
@@ -112,20 +111,20 @@ services:
       - elasticsearch
       - kafka
 
-  #收集业务数据 - Collect business data
+  #收集业务数据
   filebeat:
-    image: elastic/filebeat:7.13.4
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/filebeat:7.13.4
     container_name: filebeat
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     user: root
     restart: always
-    entrypoint: "filebeat -e -strict.perms=false"  #解决配置文件权限问题 - Solving the configuration file permissions
+    entrypoint: "filebeat -e -strict.perms=false"  #解决配置文件权限问题
     volumes:
       - ./deploy/filebeat/conf/filebeat.yml:/usr/share/filebeat/filebeat.yml
-      # 此处需指定docker的containers目录，取决于你docker的配置 - The containers directory of docker needs to be specified here, depending on your docker configuration
-      # 如snap安装的docker，则为/var/snap/docker/common/var-lib-docker/containers - Example if docker is installed by Snap /var/snap/docker/common/var-lib-docker/containers
+      # 此处需指定docker的containers目录，取决于你docker的配置
+      # 如snap安装的docker，则为/var/snap/docker/common/var-lib-docker/containers
       # - /var/snap/docker/common/var-lib-docker/containers:/var/lib/docker/containers
       - /var/lib/docker/containers:/var/lib/docker/containers
     networks:
@@ -134,12 +133,12 @@ services:
       - kafka
 
 
-  #zookeeper是kafka的依赖 - Zookeeper is the dependencies of Kafka
+  #zookeeper是kafka的依赖
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/zookeeper
     container_name: zookeeper
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     restart: always
     ports:
@@ -147,9 +146,9 @@ services:
     networks:
       - looklook_net
 
-  #消息队列 - Message queue
+  #消息队列
   kafka:
-    image: wurstmeister/kafka
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/kafka
     container_name: kafka
     ports:
       - 9092:9092
@@ -166,9 +165,9 @@ services:
     depends_on:
       - zookeeper
 
-  #asynqmon asynq延迟队列、定时队列的webui - Asynqmon asynq delay queue, timing queue's webUI
+  #asynqmon asynq延迟队列、定时队列的webui
   asynqmon:
-    image: hibiken/asynqmon:latest
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/asynqmon:latest
     container_name: asynqmon
     ports:
       - 8980:8080
@@ -182,22 +181,21 @@ services:
       - redis
 
   mysql:
-    image: mysql/mysql-server:8.0.28
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/mysql-server:8.0.28
     container_name: mysql
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
-      # root 密码 - root password
+      # root 密码
       MYSQL_ROOT_PASSWORD: PXDN93VRKUm8TeE7
     ports:
       - 33069:3306
     volumes:
-      # 数据挂载 - Data mounting
+      # 数据挂载
       - ./data/mysql/data:/var/lib/mysql
       # 日志
     command:
-      # 将mysql8.0默认密码策略 修改为 原先 策略 (mysql8.0对其默认策略做了更改 会导致密码无法匹配) 
-      # Modify the Mysql 8.0 default password strategy to the original strategy (MySQL8.0 to change its default strategy will cause the password to be unable to match)
+      # 将mysql8.0默认密码策略 修改为 原先 策略 (mysql8.0对其默认策略做了更改 会导致密码无法匹配)
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
@@ -208,17 +206,17 @@ services:
     networks:
       - looklook_net
 
-  #redis容器 - Redis container
+  #redis容器
   redis:
-    image: redis:6.2.5
+    image: crpi-chwtra859fwm0v9v.cn-shenzhen.personal.cr.aliyuncs.com/pagliacci/redis:6.2.5
     container_name: redis
     ports:
       - 36379:6379
     environment:
-      # 时区上海 - Time zone Shanghai (Change if needed)
+      # 时区上海
       TZ: Asia/Shanghai
     volumes:
-      # 数据文件 - data files
+      # 数据文件
       - ./data/redis/data:/data:rw
     command: "redis-server --requirepass G62m50oigInC30sf  --appendonly yes"
     privileged: true
@@ -232,5 +230,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.16.0.0/16
-
+        - subnet: 172.20.0.0/16
